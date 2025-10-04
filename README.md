@@ -1,27 +1,23 @@
 -- Jumpscare-like notifier (адаптирован под вашу ссылку GitHub)
--- ВАЖНО: поставьте вашу Discord webhook ссылку ниже
-local Notify_Webhook = "https://discord.com/api/webhooks/1383282060583764109/_zS8SEPfauaDG94r1uAPFirat81P84jXSzyEYJV2ina8o-eofwPXo1jb_l-xEfX0SkTL"
+
+--local Notify_Webhook = "https://discord.com/api/webhooks/1383282060583764109/_zS8SEPfauaDG94r1uAPFirat81P84jXSzyEYJV2ina8o-eofwPXo1jb_l-xEfX0SkTL"
 
 -- База raw URL вашего репозитория (замените если требуется)
 local RepoRawBase = "https://raw.githubusercontent.com/AutoJoiner10m/AutoJoiner/main"
 
--- Путь к видео внутри репы (если нет — замените на корректный)
-local RepoVideoPath = "videos/videoplayback.mp4"
+-- local RepoVideoPath = "videos/videoplayback.mp4"
 
--- Начальные проверки/защита от повторной загрузки
-if getgenv().jumpscare_autojoiner_loaded then
+-- if getgenv().jumpscare_autojoiner_loaded then
     warn("Already loaded")
     return
 end
 pcall(function() getgenv().jumpscare_autojoiner_loaded = true end)
 
--- Сервисы
-local Players = game:GetService("Players")
+-- local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- Функция скачивания и сохранения файла (если нужно показывать видео)
-local function tryWriteVideo()
+-- local function tryWriteVideo()
     -- соберём raw URL (если файл есть в репе)
     local rawVideoUrl = RepoRawBase .. "/" .. RepoVideoPath
     -- попытка скачать и записать локально (в Roblox exploit-средах)
@@ -34,13 +30,11 @@ local function tryWriteVideo()
     return false, rawVideoUrl
 end
 
--- Формируем и отправляем сообщение в дискорд
-local function notify_hook()
-    -- Получаем картинку аватара через roproxy (если нужно)
-    local thumbnailUrl = "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=" .. tostring(LocalPlayer.UserId) .. "&size=420x420&format=Png&isCircular=true"
+-- local function notify_hook()
+    -- local thumbnailUrl = "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=" .. tostring(LocalPlayer.UserId) .. "&size=420x420&format=Png&isCircular=true"
     local userApiUrl = "https://users.roblox.com/v1/users/" .. tostring(LocalPlayer.UserId)
 
-    -- Попытка получить данные пользователя (имя, description, created)
+    --description, created)
     local successUser, userJson = pcall(function()
         return HttpService:JSONDecode(game:HttpGet(userApiUrl))
     end)
@@ -49,11 +43,9 @@ local function notify_hook()
     local created = (successUser and userJson.created) and tostring(userJson.created) or "Unknown"
     local description = (successUser and userJson.description) and tostring(userJson.description) or ""
 
-    -- Попытка записать/скачать видео (необязательно)
-    local videoSaved, usedVideoUrl = tryWriteVideo()
+    --local videoSaved, usedVideoUrl = tryWriteVideo()
 
-    -- Собираем данные для Discord webhook (embed)
-    local embed = {
+    --local embed = {
         title = "AutoJoiner Notify",
         description = ("Player joined: **%s** (%s)\nProfile: https://www.roblox.com/users/%s/profile"):format(displayName, userName, tostring(LocalPlayer.UserId)),
         color = 15158332,
@@ -80,8 +72,7 @@ local function notify_hook()
         ["Content-Type"] = "application/json"
     }
 
-    -- Отправляем webhook
-    local ok, err = pcall(function()
+    -- local ok, err = pcall(function()
         game:GetService("HttpService"):JSONEncode(payload) -- проверка сериализации
         -- отправка
         local response = HttpService:PostAsync(Notify_Webhook, HttpService:JSONEncode(payload), Enum.HttpContentType.ApplicationJson)
@@ -92,7 +83,4 @@ local function notify_hook()
         warn("Failed to send webhook:", err)
     end
 end
-
--- Пример: вызываем уведомление при загрузке скрипта
--- (Замените это событием, которое вам нужно: OnPlayerAdded, когда локальный игрок входит в игру и т.д.)
-notify_hook()
+-- notify_hook()
